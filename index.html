@@ -76,55 +76,55 @@
     </div>
 
     <script>
-        let isJoin = false
-        let ws;
+        let isJoin = false // 記住有沒有加入聊天室
+        let ws; // 儲存 WebSocket 連線
 
         function join() {
-            if (isJoin) return;
-            let name = document.getElementById('nickname').value.trim()
+            if (isJoin) return; // 如果已經加入聊天室了，就略過不做事
+            let name = document.getElementById('nickname').value.trim() // 從輸入框取暱稱
             console.log("Join", name)
-            isJoin = true;
-            document.getElementById('join').style.display = 'none'
-            document.getElementById('online').style.display = 'block'
+            isJoin = true; // 標記有加入聊天室囉
+            document.getElementById('join').style.display = 'none' // 隱藏暱稱輸入框
+            document.getElementById('online').style.display = 'block' // 顯示聊天室畫面
 
-            if ("WebSocket" in window) {
-                if (window.location.hostname === '') {
+            if ("WebSocket" in window) { // 如果瀏覽器有支援WebSocket連線，就跑這裡
+                if (window.location.hostname === '') { // 取當前網址，如果為空字串，伺服器預設連 localhost:9001
                     ws = new WebSocket("ws://localhost:9001")
-                } else {
+                } else { // 如果取得到網址，去連該網址的9001Port
                     ws = new WebSocket("ws://" + window.location.hostname + ":9001")
                 }
-                ws.onopen = function (e) {
+                ws.onopen = function (e) { // 如果連線一連上，就執行這個function
                     console.log('==>', e)
-                    ws.send(JSON.stringify({
-                        action: 'join',
-                        name: encodeURIComponent(name),
+                    ws.send(JSON.stringify({ // 傳送資料到後端伺服器，並且資料先進行JSON編碼
+                        action: 'join', // 定義action為'join'，代表加入聊天室
+                        name: encodeURIComponent(name), // 取暱稱存到name，並且進行URL編碼
                     }))
                 }
-                ws.onmessage = function (e) {
-                    let txt = document.getElementById('history').value
+                ws.onmessage = function (e) { // 如果伺服器傳送訊息到頁面來，執行這個function
+                    let txt = document.getElementById('history').value // 取當前聊天室內容
                     console.log('history -> ', txt)
-                    if (txt === '') {
-                        document.getElementById('history').value = e.data
+                    if (txt === '') { // 如果當前聊天室沒有任何內容
+                        document.getElementById('history').value = e.data // 把後端伺服器傳來的文字顯示到頁面上
                     } else {
-                        document.getElementById('history').value = txt + '\n' + e.data
+                        document.getElementById('history').value = txt + '\n' + e.data // 把後端伺服器傳來的文字顯示到頁面上，並且加上一個換行
                     }
                 }
-                ws.onclose = function () { isJoin = false }
-            } else {
-                isJoin = false
-                window.alert('您的瀏覽器不支援 Websocket!')
+                ws.onclose = function () { isJoin = false } // 如果連線斷線了，則標記沒有加入聊天室了
+            } else { // 如果瀏覽器不支援WebSocket，就跑這裡
+                isJoin = false // 標記沒有加入聊天室了
+                window.alert('您的瀏覽器不支援 Websocket!') // 跳出訊息警告使用者無法使用聊天室
             }
         }
 
         function sendMessage() {
-            let msg = document.getElementById('messagewin').value.trim()
+            let msg = document.getElementById('messagewin').value.trim() // 取文字輸入框的文字
             console.log('Send', msg)
-            if (msg && msg !== '' && ws) {
-                ws.send(JSON.stringify({
-                    action: 'send',
-                    text: encodeURIComponent(msg),
+            if (msg && msg !== '' && ws) { // 如果文字不是空字串，連線有連上
+                ws.send(JSON.stringify({ // 傳送訊息到伺服器
+                    action: 'send', // 定義action為'send'，代表傳送訊息
+                    text: encodeURIComponent(msg), // 把輸入訊息進行URL編碼
                 }));
-                document.getElementById('messagewin').value = ''
+                document.getElementById('messagewin').value = '' // 清空輸入框
             }
         }
     </script>
