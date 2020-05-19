@@ -2,7 +2,7 @@
 
 0. 模組安裝
 ```shell
-python3 -m pip install websocket-server
+python3 -m pip install websocket-server flask
 ```
 
 1. 啟動伺服器
@@ -10,4 +10,4 @@ python3 -m pip install websocket-server
 python3 server.py
 ```
 
-2. 打開 http://127.0.0.1:8080/
+2. 打開 http://localhost:8080/

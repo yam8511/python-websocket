@@ -1,5 +1,9 @@
+#!/usr/bin/python3
+# -*- coding: UTF-8 -*-
+
 from flask import Flask, request, Response
 from websocket_server import WebsocketServer
+import logging
 import json
 import threading
 import os.path
@@ -12,7 +16,11 @@ def new_client(client, server):  # 有新的使用者連線
 
 
 def client_left(client, server):  # 有使用者離線
-    print("Client(%d) disconnected" % client['id'])
+    if client is None:
+        return
+    print(" ===> ", client)
+    server.send_message_to_all("%s 離開聊天室囉!" % clients[client['id']])
+    del clients[client['id']]
 
 
 def message_received(client, server, message):  # 接收到使用者訊息
@@ -28,7 +36,7 @@ def message_received(client, server, message):  # 接收到使用者訊息
 
 
 def runWebsocket():
-    server = WebsocketServer(9001)
+    server = WebsocketServer(9001, host='0.0.0.0')
     server.set_fn_new_client(new_client)
     server.set_fn_client_left(client_left)
     server.set_fn_message_received(message_received)
