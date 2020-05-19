@@ -7,6 +7,7 @@ import logging
 import json
 import threading
 import os.path
+import urllib
 
 clients = {}
 
@@ -27,11 +28,12 @@ def message_received(client, server, message):  # 接收到使用者訊息
     data = json.loads(message)
     print("Message => ", data)
     if data['action'] == 'join':
-        clients[client['id']] = data['name']
-        server.send_message_to_all("%s 加入聊天室囉!" % data['name'])
+        name = urllib.parse.unquote(data['name'])
+        clients[client['id']] = name
+        server.send_message_to_all("%s 加入聊天室囉!" % name)
     elif data['action'] == 'send':
         server.send_message_to_all("%s: %s" % (
-            clients[client['id']], data['text']
+            clients[client['id']], urllib.parse.unquote(data['text'])
         ))
 
 
@@ -162,7 +164,7 @@ def root():
                             console.log('==>', e)
                             ws.send(JSON.stringify({
                                 action: 'join',
-                                name: name,
+                                name: encodeURIComponent(name),
                             }))
                         }
                         ws.onmessage = function (e) {
@@ -187,7 +189,7 @@ def root():
                     if (msg && msg !== '' && ws) {
                         ws.send(JSON.stringify({
                             action: 'send',
-                            text: msg,
+                            text: encodeURIComponent(msg),
                         }));
                         document.getElementById('messagewin').value = ''
                     }
@@ -197,6 +199,29 @@ def root():
 
         </html>
     """
+    return Response(content, mimetype="text/html")
+
+
+def root_dir():  # pragma: no cover
+    return os.path.abspath(os.path.dirname(__file__))
+
+
+def get_file(filename):  # pragma: no cover
+    try:
+        src = os.path.join(root_dir(), filename)
+        # Figure out how flask returns static files
+        # Tried:
+        # - render_template
+        # - send_file
+        # This should not be so non-obvious
+        return open(src).read()
+    except IOError as exc:
+        return str(exc)
+
+
+@app.route('/dev')
+def dev():
+    content = get_file('index.html')
     return Response(content, mimetype="text/html")
 
 

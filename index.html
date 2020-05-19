@@ -97,7 +97,7 @@
                     console.log('==>', e)
                     ws.send(JSON.stringify({
                         action: 'join',
-                        name: name,
+                        name: encodeURIComponent(name),
                     }))
                 }
                 ws.onmessage = function (e) {
@@ -122,7 +122,7 @@
             if (msg && msg !== '' && ws) {
                 ws.send(JSON.stringify({
                     action: 'send',
-                    text: msg,
+                    text: encodeURIComponent(msg),
                 }));
                 document.getElementById('messagewin').value = ''
             }
