@@ -88,7 +88,11 @@
             document.getElementById('online').style.display = 'block'
 
             if ("WebSocket" in window) {
-                ws = new WebSocket("ws://" + window.location.hostname + ":9001")
+                if (window.location.hostname === '') {
+                    ws = new WebSocket("ws://localhost:9001")
+                } else {
+                    ws = new WebSocket("ws://" + window.location.hostname + ":9001")
+                }
                 ws.onopen = function (e) {
                     console.log('==>', e)
                     ws.send(JSON.stringify({
